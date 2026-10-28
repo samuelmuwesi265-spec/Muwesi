@@ -40,7 +40,7 @@ def chat():
         messages = [{"role": "system", "content": SYSTEM_PROMPT}] + user_messages
 
         completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             messages=messages,
             temperature=0.8,
             max_tokens=1000,
