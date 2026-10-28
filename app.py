@@ -40,7 +40,7 @@ def chat():
         messages = [{"role": "system", "content": SYSTEM_PROMPT}] + user_messages
 
         completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=messages,
             temperature=0.8,
             max_tokens=1000,
@@ -54,4 +54,4 @@ def chat():
         return jsonify({"reply": f"Sorry, error: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True) 
+    app.run(debug=True)
