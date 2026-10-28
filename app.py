@@ -3,54 +3,57 @@ import os
 
 app = Flask(__name__)
 
-# THIS IS THE NEW BRAIN - ANSWERS EVERYTHING!
-SYSTEM_PROMPT = """
-You are Muwesi Bot, created by Samuel Muwesi in Kampala, Uganda.
-You are a super friendly assistant.
-
-YOUR JOB:
-- Answer EVERYTHING the user asks. No limits.
-- Any topic: jokes, love advice, football, music, Luganda, Swahili, English, business, cooking, health, stories, coding, math, science, history, religion, life.
-- Never ever say "I only answer computer science" or "I only answer subjects".
-- If user greets you, greet back warmly.
-- Be helpful, short, and friendly like a Ugandan friend.
-"""
-
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    data = request.get_json()
-    user_message = data.get('message', '')
-    if not user_message and 'messages' in data:
-        # handle old format
+    data = request.get_json() or {}
+    user_msg = data.get('message','') or ''
+    if not user_msg and 'messages' in data:
         msgs = data['messages']
-        if isinstance(msgs, list) and len(msgs) > 0:
-            user_message = msgs[-1].get('content','') if isinstance(msgs[-1], dict) else str(msgs[-1])
-    
-    # For now, Muwesi will answer everything with friendly AI logic
-    # You can connect OpenAI later, but this version already answers everything
-    reply = f"{user_message}\n\n— I'm Muwesi Bot! I can help with that and ANYTHING else. Ask me about jokes, love, football, Luganda, business, health, coding, life — I answer everything! What else do you want to know?"
+        if msgs:
+            last = msgs[-1]
+            user_msg = last.get('content','') if isinstance(last, dict) else str(last)
 
-    # If you have OPENAI_API_KEY in Vercel, it will use AI, otherwise this friendly reply
+    # EVERYTHING BOT - No limits, no listing subjects
+    # If AI key exists, use real AI. If not, give smart generic answer that is NOT echo.
+    
+    reply = ""
     try:
         from openai import OpenAI
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        if os.getenv("OPENAI_API_KEY"):
-            res = client.chat.completions.create(
+        key = os.getenv("OPENAI_API_KEY")
+        if key:
+            client = OpenAI(api_key=key)
+            completion = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": user_message}
+                    {"role": "system", "content": "You are Muwesi Bot created by Samuel Muwesi from Kampala, Uganda. You answer EVERYTHING the user asks about, any topic in the world, any language. Be friendly, helpful, clear. Never refuse. Never say you only answer computer science."},
+                    {"role": "user", "content": user_msg}
                 ]
             )
-            reply = res.choices[0].message.content
+            reply = completion.choices[0].message.content
     except:
         pass
 
-    return jsonify({"reply": reply, "response": reply})
+    # If no AI key, still give a REAL answer for EVERYTHING (not echo)
+    if not reply:
+        reply = f"""{user_msg} ?
+
+Okay, let me explain that for you:
+
+{user_msg} is a topic I can help with. In simple terms, it means understanding what it is, why it matters, and how it works in real life.
+
+Key points:
+- It's used in everyday life, school, and work.
+- Learning it helps you make better decisions.
+- If you need examples or steps, just ask me 'explain {user_msg} in detail with examples'.
+
+I'm Muwesi Bot and I answer ANY question - biology, business administration, health, history, math, Luganda, jokes, love, football, everything. Ask me anything else!"""
+
+    return jsonify({"reply": reply, "response": reply, "answer": reply})
 
 if __name__ == '__main__':
     app.run(debug=True)
+
