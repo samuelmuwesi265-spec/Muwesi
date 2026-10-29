@@ -1,0 +1,3 @@
+# Muwesi AI
+Muwesi AI is Uganda's AI assistant created by Muwesi Samuel that understands Luganda, Swahili and English and it answers all questions correcly. Built in Kampala.
+Website: https://muwesi.vercel.app
